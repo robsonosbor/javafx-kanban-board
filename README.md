@@ -1,6 +1,6 @@
 # Projeto Sistema Kanban (Only Skeleton)
 
-![Screenshot](resource/images/screenshot.jpg)
+![Screenshot](https://github.com/robsonosbor/javafx-kanban-board/blob/main/src/main/resources/Images/screenshot.jpg)
 
 ## 📌 Sobre o Projeto
 O **Kanban Board** é o esqueleto de uma aplicação de gerenciamento de tarefas que implementa um **board customizável** para acompanhar o fluxo de trabalho, inspirado no método **Kanban**.  
