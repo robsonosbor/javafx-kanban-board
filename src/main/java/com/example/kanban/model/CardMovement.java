@@ -1,16 +1,21 @@
 package com.example.kanban.model;
 
-import java.time.Instant;
+import com.example.kanban.service.BoardService;
+
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static com.example.kanban.service.ServiceConfig.boardService;
 
 public class CardMovement {
     private Long id;
     private Long cardId;
     private Long fromColumnId;
     private Long toColumnId;
-    private Instant enteredAt;
-    private Instant leftAt;
+    private LocalDateTime enteredAt;
+    private LocalDateTime leftAt;
     LocalDateTime movedAt;
+    BoardService boardService;
 
     public CardMovement() {
 
@@ -69,19 +74,19 @@ public class CardMovement {
         this.toColumnId = toColumnId;
     }
 
-    public Instant getEnteredAt() {
+    public LocalDateTime getEnteredAt() {
         return enteredAt;
     }
 
-    public void setEnteredAt(Instant enteredAt) {
+    public void setEnteredAt(LocalDateTime enteredAt) {
         this.enteredAt = enteredAt;
     }
 
-    public Instant getLeftAt() {
+    public LocalDateTime getLeftAt() {
         return leftAt;
     }
 
-    public void setLeftAt(Instant leftAt) {
+    public void setLeftAt(LocalDateTime leftAt) {
         this.leftAt = leftAt;
     }
 
@@ -92,4 +97,24 @@ public class CardMovement {
     public void setMovedAt(LocalDateTime movedAt) {
         this.movedAt = movedAt;
     }
+
+    public Column getColumn() {
+        if (fromColumnId == null) return null;
+
+        return boardService.findColumnById(fromColumnId).orElse(null);
+    }
+
+
+    public Column getFromColumn(BoardService boardService, Long boardId) {
+        if (fromColumnId == null) return null;
+
+        return boardService.findColumnById(boardId, fromColumnId).orElse(null);
+    }
+
+    public Column getToColumn(BoardService boardService, Long boardId) {
+        if (toColumnId == null) return null;
+
+        return boardService.findColumnById(boardId, toColumnId).orElse(null);
+    }
+
 }

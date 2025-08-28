@@ -140,4 +140,11 @@ public class BoardService {
         boardDao.delete(id);
     }
 
+    public Optional<Column> findColumnById(Long boardId, Long fromColumnId) {
+        return columnDao.findById(fromColumnId);
+    }
+
+    public Optional<Column> findColumnById(Long fromColumnId) {
+        return columnDao.findById(fromColumnId);
+    }
 }

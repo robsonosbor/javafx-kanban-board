@@ -8,16 +8,24 @@ import com.example.kanban.model.Column;
 import com.example.kanban.model.ColumnType;
 import com.example.kanban.service.BoardService;
 import com.example.kanban.service.CardService;
+import com.lowagie.text.*;
+import com.lowagie.text.Font;
+import com.lowagie.text.pdf.PdfWriter;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 
+import java.awt.*;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -36,7 +44,6 @@ public class BoardMenuView {
     private final BoardService boardService;
     private final CardService cardService;
     private final Board board;
-    private final List<ColumnView> columnViews = new ArrayList<>(); // lista das colunas renderizadas
     private final CardDao cardDao = new JdbcCardDao();
 
 
@@ -87,16 +94,8 @@ public class BoardMenuView {
 
                 // salva no banco
                 cardService.createCard(card.getId(), card.getTitle(), card.getDescription());
-
-                // adiciona na UI
-                for (ColumnView colView : columnViews) {
-                    if (colView.getColumn().getId().equals(initialCol.getId())) {
-                        colView.addCard(card);
-                    }
-                }
             });
         });
-
 
         Button btnList = new Button("Listar (console)");
         btnList.setMaxWidth(Double.MAX_VALUE);
@@ -117,11 +116,66 @@ public class BoardMenuView {
             });
         });
 
-        actionsBox.getChildren().addAll(btnCreateCard, btnList);
+        // Botão gerar PDF
+        Button btnReport = new Button("Gerar Relatório PDF");
+        btnReport.setMaxWidth(Double.MAX_VALUE);
+        btnReport.setOnAction(e -> gerarRelatorioPDF());
 
+        actionsBox.getChildren().addAll(btnCreateCard, btnList, btnReport);
         rootPane.setRight(actionsBox);
 
         return rootPane;
+    }
+
+    private void gerarRelatorioPDF() {
+        try {
+            Document document = new Document(PageSize.A4);
+            String fileName = "board-relatorio.pdf";
+            PdfWriter.getInstance(document, new FileOutputStream(fileName));
+            document.open();
+
+            Font titleFont = new Font(Font.HELVETICA, 18, Font.BOLD);
+            Font headerFont = new Font(Font.HELVETICA, 14, Font.BOLD, Color.BLUE);
+            Font textFont = new Font(Font.HELVETICA, 12, Font.NORMAL);
+
+            document.add(new Paragraph("Relatório do Board: " + board.getName(), titleFont));
+            document.add(new Paragraph("Data de geração: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), textFont));
+            document.add(Chunk.NEWLINE);
+
+            List<Column> cols = boardService.listColumns(board.getId());
+            for (Column col : cols) {
+                document.add(new Paragraph("Coluna: " + col.getName() + " (" + col.getType() + ")", headerFont));
+                document.add(Chunk.NEWLINE);
+
+                List<Card> cards = cardDao.findByBoardAndColumn(board.getId(), col.getId());
+                if (cards.isEmpty()) {
+                    document.add(new Paragraph("  - Sem cards nesta coluna", textFont));
+                } else {
+                    for (Card c : cards) {
+                        document.add(new Paragraph("Título: " + c.getTitle(), textFont));
+                        document.add(new Paragraph("Descrição: " + c.getDescription(), textFont));
+                        document.add(new Paragraph("Criado em: " + c.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), textFont));
+                        document.add(new Paragraph("Status: " + (c.isLocked() ? "🔒 BLOQUEADO" : "Ativo"), textFont));
+                        document.add(Chunk.NEWLINE);
+                    }
+                }
+                document.add(Chunk.NEWLINE);
+            }
+
+            document.close();
+
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Relatório gerado: " + fileName, ButtonType.OK);
+            ok.setTitle("Sucesso");
+            ok.showAndWait();
+
+            // Tenta abrir o PDF automaticamente
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(new java.io.File(fileName));
+            }
+
+        } catch (Exception ex) {
+            showError("Erro ao gerar relatório: " + ex.getMessage());
+        }
     }
 
     /** Reconstrói a área central com colunas e cards (chame após cada alteração). */

@@ -55,7 +55,7 @@ public class CardService {
         mv.setCardId(c.getId());
         mv.setFromColumnId(null);
         mv.setToColumnId(initial.getId());
-        mv.setEnteredAt(Instant.now());
+        mv.setEnteredAt(LocalDateTime.now());
         movementDao.create(mv);
 
         return c;
@@ -89,7 +89,7 @@ public class CardService {
         mv.setCardId(card.getId());
         mv.setFromColumnId(fromId);
         mv.setToColumnId(next.getId());
-        mv.setEnteredAt(Instant.now());
+        mv.setEnteredAt(LocalDateTime.now());
         movementDao.create(mv);
     }
 
@@ -116,7 +116,7 @@ public class CardService {
         mv.setCardId(card.getId());
         mv.setFromColumnId(fromId);
         mv.setToColumnId(cancel.getId());
-        mv.setEnteredAt(Instant.now());
+        mv.setEnteredAt(LocalDateTime.now());
         movementDao.create(mv);
     }
 
@@ -206,7 +206,7 @@ public class CardService {
         mv.setCardId(card.getId());
         mv.setFromColumnId(fromId);
         mv.setToColumnId(toColumnId);
-        mv.setEnteredAt(java.time.Instant.now());
+        mv.setEnteredAt(LocalDateTime.now());
         movementDao.create(mv);
 
         return card;
